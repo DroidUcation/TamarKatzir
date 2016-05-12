@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">5 דברים שלא ידעתם על...</string>
+    <string name="title">5 דברים שלא ידעתם על רקפות</string>
+    <string name="data1">אני פרח מוגן</string>
+    <string name="data2">אני גדל תחת הסלע</string>
+    <string name="data3">אני כפוף</string>
+    <string name="data4">אני גדל רק בקור</string>
+    <string name="data5">אני נובל מהר</string>
+    <string name="action_settings">Settings</string>
+</resources>
