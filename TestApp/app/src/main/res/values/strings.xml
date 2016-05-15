@@ -6,5 +6,10 @@
     <string name="data3">אני כפוף</string>
     <string name="data4">אני גדל רק בקור</string>
     <string name="data5">אני נובל מהר</string>
+    <string name="data6">אני סגול</string>
+    <string name="data7">צהוב אני</string>
+    <string name="data8">אני ורוד</string>
+    <string name="data9">אני כחול</string>
+    <string name="data10">אני מרגש  </string>
     <string name="action_settings">Settings</string>
 </resources>

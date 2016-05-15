@@ -1,14 +1,23 @@
 package com.example.testapp;
 
 import android.app.Activity;
+import android.app.AlarmManager;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.ComponentName;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.NotificationCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
@@ -18,15 +27,38 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.Toast;
 
+import java.util.Calendar;
+
 public class MainActivity extends AppCompatActivity {
 
+    boolean dataInserted = false;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        initData();
+        //initData();
+        //SetAlarm();
+        //showNotificationData();
+        getApplicationContext().startService(new Intent(getApplicationContext(), DailyAlarmService.class));
+
+//        Bundle extras = getIntent().getExtras();
+//        //Toast.makeText(MainActivity.this, "a", Toast.LENGTH_LONG).show();
+//        if(extras != null){
+//            //Log.i( "dd","Extra:" + extras.getString("item_id") );
+//            Toast.makeText(MainActivity.this, "flagNewData: " + extras.getString("flagNewData"), Toast.LENGTH_LONG).show();
+//            //String strFlagNewData = extras.getString("flagNewData");
+//            //Toast.makeText(MainActivity.this, "flagNewData: " + strFlagNewData, Toast.LENGTH_LONG).show();
+////            if (strFlagNewData == "1")
+////                sTypeData = 5;
+//        }
+        //boolean dataInserted = false;
+         //initialize facts table
+        if(!dataInserted){
+            initData();
+            dataInserted = true; // insert data only once.TODO: need to save in Bundle savedInstanceState
+        }
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -44,26 +76,40 @@ public class MainActivity extends AppCompatActivity {
             v = group.getChildAt(i);
             if(v instanceof Button) v.setOnClickListener(new View.OnClickListener() {
                 public void onClick(View v) {
+                    short sTypeData = 0;
+                    Bundle extras = getIntent().getExtras();
+//                    //Toast.makeText(MainActivity.this, "a", Toast.LENGTH_LONG).show();
+                    if(extras != null){
+//                        //Log.i( "dd","Extra:" + extras.getString("item_id") );
+//                        Toast.makeText(MainActivity.this, "flagNewData: " + extras.getString("flagNewData"), Toast.LENGTH_LONG).show();
+                        String strFlagNewData = extras.getString("flagNewData");
+                        //Toast.makeText(MainActivity.this, "flagNewData: " + strFlagNewData, Toast.LENGTH_LONG).show();
+                        if (strFlagNewData.equals("1"))
+                            sTypeData = 5;
+}
                     String strData= "";
+                    String strId;
                     switch (v.getId()) {
-                            case R.id.button1:
-                                strData = getData("1");
+                        case R.id.button1:
+                            //strId = (String) (1 + sTypeData);
+                            //Toast.makeText(MainActivity.this, "strid: " + strId, Toast.LENGTH_LONG).show();
+                                strData = getData(1 + sTypeData);
                                 break;
 
-                            case R.id.button2:
-                                strData = getData("2");
+                        case R.id.button2:
+                                strData = getData(2 + sTypeData);
                                 break;
 
                         case R.id.button3:
-                            strData = getData("3");
+                            strData = getData(3 + sTypeData);
                             break;
 
                         case R.id.button4:
-                            strData = getData("4");
+                            strData = getData(4 + sTypeData);
                             break;
 
                         case R.id.button5:
-                            strData = getData("5");
+                            strData = getData(5 + sTypeData);
                             break;
                         }
                     Toast.makeText(MainActivity.this, strData, Toast.LENGTH_LONG).show();
@@ -71,8 +117,10 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private String getData(String strId)
+    private String getData(int intId)
     {
+        String strId = String.valueOf(intId);
+        //Toast.makeText(MainActivity.this, "strid: " + strId, Toast.LENGTH_LONG).show();
         String[] col = {AppConst.COL_DATA_TEXT};
         String strData= "";
         Cursor cursor = getContentResolver()
@@ -87,12 +135,61 @@ public class MainActivity extends AppCompatActivity {
         }
         return strData;
     }
+//    private void startService()
+//    {
+//        Intent appIntent = new Intent(this, AppIntentService.class);
+//        //appIntent.putExtra(AppIntentService.PARAM_IN_MSG, strInputMsg);
+//        startService(appIntent);
+//    }
+
+    public void SetAlarm()//Context context)
+    {
+        Intent intent = new Intent(this, AppIntentService.class);
+        PendingIntent pintent = PendingIntent.getService(this, 0, intent, 0);
+        AlarmManager alarm = (AlarmManager)getSystemService(Context.ALARM_SERVICE);
+        Calendar cal = Calendar.getInstance();
+        alarm.setRepeating(AlarmManager.RTC_WAKEUP, cal.getTimeInMillis(), 30*1000, pintent);
+        Toast.makeText(MainActivity.this, "Start Alarm", Toast.LENGTH_LONG).show();
+
+        //girsa 2
+//        Intent myIntent = new Intent(this, AppIntentService.class);
+//        PendingIntent pi = PendingIntent.getService(this, 0, myIntent, 0);
+//        AlarmManager alarmManager = (AlarmManager)getSystemService(ALARM_SERVICE);
+//        Calendar calendar = Calendar.getInstance();
+//        calendar.setTimeInMillis(System.currentTimeMillis());
+//        calendar.add(Calendar.SECOND, 1);
+//        alarmManager.set(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), pi);
+//        Toast.makeText(MainActivity.this, "Start Alarm", Toast.LENGTH_LONG).show();
+
+        //girsa 1
+//        AlarmManager am =( AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
+//        Intent i = new Intent(context, Alarm.class);
+//        PendingIntent pi = PendingIntent.getBroadcast(context, 0, i, 0);
+//        am.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), 1000 * 60 * 10, pi); // Millisec * Second * Minute
+//
+//        am.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), result , pendingIntent);
+    }
+
+//    private void showNotificationData() {
+//        Notification n = new NotificationCompat.Builder(this)
+//                .setContentTitle("עובדות חדשות על רקפות")
+//                .setContentText("לחץ על הכפתורים להצגתם")
+//                .setSmallIcon(R.mipmap.ic_rakefet)
+//                .build();
+//
+//        NotificationManager notificationManager =
+//                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+//
+//        notificationManager.notify(1, n);
+//    }
+
     private void initData()
     {
         ContentValues values = new ContentValues();
         values.put(AppConst.COL_DATA_ID, 1);
         values.put(AppConst.COL_DATA_TEXT, getString(R.string.data1));
         Uri uri = getContentResolver().insert(AppProvider.CONTENT_URI, values);
+        //getContentResolver().update(AppProvider.CONTENT_URI, values, "DataID=1", null);
 
         values = new ContentValues();
         values.put(AppConst.COL_DATA_ID, 2);
@@ -115,34 +212,6 @@ public class MainActivity extends AppCompatActivity {
         uri = getContentResolver().insert(AppProvider.CONTENT_URI, values);
     }
 
-//    public void onClick1(View view) {
-//        //save all in onCreate and take in all bunon et hamarim
-//        Toast.makeText(getBaseContext(), "שלום", Toast.LENGTH_LONG).show();
-//        ContentValues values = new ContentValues();
-//        values.put("DataText", "אני פרח מוגן");
-//        Uri uri = getContentResolver().insert(AppProvider.CONTENT_URI, values);
-//        Toast.makeText(getBaseContext(), "New record inserted", Toast.LENGTH_LONG).show();
-//    }
-//
-//    public void onClick2(View view)
-//    {
-//        Toast.makeText(MainActivity.this, "אני גדל מתחת לסלע", Toast.LENGTH_LONG).show();
-//    }
-
-    //    public void onClick3(View view)
-//    {
-//        Toast.makeText(MainActivity.this, "אני כפוף אך בולט", Toast.LENGTH_LONG).show();
-//    }
-//
-//    public void onClick4(View view)
-//    {
-//        Toast.makeText(MainActivity.this, "אני גדל רק בקור", Toast.LENGTH_LONG).show();
-//    }
-//
-//    public void onClick5(View view)
-//    {
-//        Toast.makeText(MainActivity.this, "אני נובל מהר", Toast.LENGTH_LONG).show();
-//    }
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -164,58 +233,26 @@ public class MainActivity extends AppCompatActivity {
 
         return super.onOptionsItemSelected(item);
     }
+
+//    AppIntentService mService;
+//    boolean mBound;
+//    private ServiceConnection mConnection = new ServiceConnection() {
+//
+//        @Override
+//        public void onServiceConnected(ComponentName className,
+//                                       IBinder service) {
+//            AppIntentService binder = (AppIntentService) service;
+//            mService = binder.getSystemService();
+//            mBound = true;
+//        }
+//
+//        @Override
+//        public void onServiceDisconnected(ComponentName arg0) {
+//            mBound = false;
+//        }
+//    };
 }
 
 
 
 
-//        final Button button1 = (Button) findViewById(R.id.button1);
-//        button1.setOnClickListener(new View.OnClickListener() {
-//            public void onClick(View v) {
-//                // Perform action on click
-////                int vName = v.getId();
-////                //Toast.makeText(MainActivity.this, vName, Toast.LENGTH_LONG).show();
-////                Toast.makeText(MainActivity.this, "אני פרח מוגן", Toast.LENGTH_LONG).show();
-//
-//                ContentValues values = new ContentValues();
-//                values.put("DataText", "אני פרח מוגן");
-//                Uri uri = getContentResolver().insert(AppProvider.CONTENT_URI, values);
-//                Toast.makeText(getBaseContext(), "New record inserted", Toast.LENGTH_LONG).show();
-//
-//
-//            }
-//
-//        });
-
-
-//        final Button button2 = (Button) findViewById(R.id.button1);
-//        button2.setOnClickListener(new View.OnClickListener() {
-//            public void onClick(View v) {
-//                // Perform action on click
-//                Toast.makeText(MainActivity.this, "אני פרח מוגן", Toast.LENGTH_LONG).show();
-//            }
-//        });
-//
-//        final Button button3 = (Button) findViewById(R.id.button1);
-//        button3.setOnClickListener(new View.OnClickListener() {
-//            public void onClick(View v) {
-//                // Perform action on click
-//                Toast.makeText(MainActivity.this, "אני גדל מתחת לסלע", Toast.LENGTH_LONG).show();
-//            }
-//        });
-//
-//        final Button button4 = (Button) findViewById(R.id.button1);
-//        button4.setOnClickListener(new View.OnClickListener() {
-//            public void onClick4(View v) {
-//                // Perform action on click
-//                Toast.makeText(MainActivity.this, "אני גדל רק בקור", Toast.LENGTH_LONG).show();
-//            }
-//        });
-//
-//        final Button button5 = (Button) findViewById(R.id.button1);
-//        button5.setOnClickListener(new View.OnClickListener() {
-//            public void onClick5(View v) {
-//                // Perform action on click
-//                Toast.makeText(MainActivity.this, "אני נובל מהר", Toast.LENGTH_LONG).show();
-//            }
-//        });

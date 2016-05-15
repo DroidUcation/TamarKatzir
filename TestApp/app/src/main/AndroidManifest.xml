@@ -22,6 +22,17 @@
             android:name=".AppProvider"
             android:authorities="com.example.testapp.AppProvider"
             android:exported="true" />
+        <receiver android:name=".AlarmReceiver"
+            android:enabled="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED"></action>
+            </intent-filter>
+        </receiver>
+
+        <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+
+        <service android:name="com.example.testapp.AppIntentService" android:enabled="true" android:exported="false"></service>
+        <service android:name="com.example.testapp.DailyAlarmService" android:enabled="true" android:exported="false"></service>
 
     </application>
 
